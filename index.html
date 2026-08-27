@@ -1,11 +1,155 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Web Uji Coba Guru TIK</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uji Coba Ruang Ujian & Monitoring</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f6f8;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .warning-box {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: none;
+      font-weight: bold;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-top: 16px;
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding: 50px;">
-    <h1>Halo, Selamat Datang di Web Uji Coba!</h1>
-    <p>Ini adalah deployment pertama saya melalui GitHub dan Vercel.</p>
+<body>
+
+<div class="container">
+  <h2>Portal Ujian TIK - MTs Andalusia</h2>
+  
+  <div id="peringatan" class="warning-box">
+    Peringatan: Anda terdeteksi meninggalkan layar ujian! Pelanggaran dicatat ke sistem guru.
+  </div>
+
+  <div id="identitasSection">
+    <div class="form-group">
+      <label for="namaSiswa">Nama Lengkap:</label>
+      <input type="text" id="namaSiswa" placeholder="Masukkan nama Anda">
+    </div>
+    <div class="form-group">
+      <label for="kelasSiswa">Kelas:</label>
+      <input type="text" id="kelasSiswa" placeholder="Contoh: 9A">
+    </div>
+    <button onclick="mulaiUjian()">Mulai Ujian</button>
+  </div>
+
+  <div id="ujianSection" style="display: none;">
+    <p>Status: <strong style="color: green;">Ujian Sedang Berlangsung</strong> | Pelanggaran: <span id="counterPelanggaran">0</span>x</p>
+    
+    <!-- Ganti src di bawah dengan link Google Form ujian Anda jika ada -->
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc_Example/viewform?embedded=true">Memuat form ujian...</iframe>
+  </div>
+</div>
+
+<script>
+  // GANTI DENGAN URL GOOGLE APPS SCRIPT ANDA
+  const SCRIPT_URL = "TEMPEL_URL_WEB_APP_GOOGLE_APPS_SCRIPT_DISINI";
+
+  let totalPelanggaran = 0;
+  let ujianAktif = false;
+  let dataSiswa = { nama: "", kelas: "" };
+
+  function mulaiUjian() {
+    const nama = document.getElementById("namaSiswa").value.trim();
+    const kelas = document.getElementById("kelasSiswa").value.trim();
+
+    if (!nama || !kelas) {
+      alert("Harap isi Nama dan Kelas terlebih dahulu!");
+      return;
+    }
+
+    dataSiswa.nama = nama;
+    dataSiswa.kelas = kelas;
+    ujianAktif = true;
+
+    document.getElementById("identitasSection").style.display = "none";
+    document.getElementById("ujianSection").style.display = "block";
+
+    // Kirim log awal saat siswa mulai ujian
+    kirimLog("Mulai Ujian", 0);
+  }
+
+  // Deteksi beralih tab atau minimize browser
+  document.addEventListener("visibilitychange", function() {
+    if (!ujianAktif) return;
+
+    if (document.hidden) {
+      totalPelanggaran++;
+      document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
+      
+      const boxPeringatan = document.getElementById("peringatan");
+      boxPeringatan.style.display = "block";
+
+      // Kirim data pelanggaran ke Google Sheets
+      kirimLog("Pindah Tab / Minimize", totalPelanggaran);
+    }
+  });
+
+  function kirimLog(aktivitas, count) {
+    const payload = {
+      nama: dataSiswa.nama,
+      kelas: dataSiswa.kelas,
+      aktivitas: aktivitas,
+      totalPelanggaran: count
+    };
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error("Gagal mengirim log:", err));
+  }
+</script>
+
 </body>
 </html>
