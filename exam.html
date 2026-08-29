@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruang Ujian - DIGITAL EXAM PORTAL</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    :root {
+      --primary-navy: #0d1b2a;
+      --navy-light: #1b263b;
+      --bg-body: #f1f5f9;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+    }
+
+    .text-navy {
+      color: var(--primary-navy) !important;
+    }
+
+    .card-exam-room {
+      border: 1px solid rgba(13, 27, 42, 0.08);
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 10px 25px -5px rgba(13, 27, 42, 0.1);
+    }
+
+    .exam-frame-container {
+      width: 100%;
+      height: 78vh;
+      min-height: 550px;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body class="p-2 p-md-4">
+
+<div class="container-fluid max-w-screen-xl">
+  <div class="card card-exam-room p-3 p-md-4">
+    
+    <!-- Peringatan Pelanggaran -->
+    <div id="peringatan" class="alert alert-danger d-none align-items-center gap-2 py-2 px-3 mb-3 rounded-3 border-danger-subtle" role="alert">
+      <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5"></i>
+      <div class="small fw-semibold">
+        Peringatan: Terdeteksi berpindah tab/aplikasi! Pelanggaran dicatat ke sistem guru.
+      </div>
+    </div>
+
+    <!-- Status Bar Header Siswa -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-light p-3 rounded-3 border mb-3 gap-2">
+      <div class="text-navy">
+        <i class="bi bi-person-circle fs-5 me-1 align-middle"></i>
+        <strong id="lblNama" class="fs-6">-</strong> 
+        <span class="badge bg-secondary ms-1" id="lblKelas">-</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+          <i class="bi bi-circle-fill fs-6 me-1"></i>Ujian Berlangsung
+        </span>
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2">
+          Pelanggaran: <strong id="counterPelanggaran">0</strong>x
+        </span>
+      </div>
+    </div>
+
+    <!-- Container Google Form -->
+    <div class="exam-frame-container shadow-sm">
+      <iframe src="https://bit.ly/exam91">Memuat form ujian...</iframe>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqeFzjp0DyxDQnhMzmaLGx7Z9f1NlUJrgG6xVVu3gSYflv1JdhozyXu5gAH5l2nF-z/exec";
+
+  // Ambil identitas siswa dari sesi
+  const namaSiswa = sessionStorage.getItem("exam_nama");
+  const kelasSiswa = sessionStorage.getItem("exam_kelas");
+
+  // Validasi: Jika belum login, tendang balik ke index.html
+  if (!namaSiswa || !kelasSiswa) {
+    alert("Sesi tidak ditemukan. Silakan login terlebih dahulu!");
+    window.location.replace("index.html");
+  }
+
+  let totalPelanggaran = 0;
+
+  window.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("lblNama").innerText = namaSiswa;
+    document.getElementById("lblKelas").innerText = kelasSiswa;
+
+    // Catat log siswa masuk ke ruang ujian
+    kirimLog("Mulai Ujian", 0);
+  });
+
+  // Pemantau fokus layar
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      totalPelanggaran++;
+      document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
+      
+      const boxPeringatan = document.getElementById("peringatan");
+      boxPeringatan.classList.remove("d-none");
+      boxPeringatan.classList.add("d-flex");
+
+      kirimLog("Pindah Tab / Minimize", totalPelanggaran);
+    }
+  });
+
+  function kirimLog(aktivitas, count) {
+    const payload = {
+      nama: namaSiswa,
+      kelas: kelasSiswa,
+      aktivitas: aktivitas,
+      totalPelanggaran: count
+    };
+
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(err => console.error("Gagal mengirim log:", err));
+  }
+</script>
+
+</body>
+</html>
