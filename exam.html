@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <!-- Status Bar Header Siswa -->
+    <!-- Status Bar Siswa -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-light p-3 rounded-3 border mb-3 gap-2">
       <div class="text-navy">
         <i class="bi bi-person-circle fs-5 me-1 align-middle"></i>
@@ -91,30 +91,45 @@
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqeFzjp0DyxDQnhMzmaLGx7Z9f1NlUJrgG6xVVu3gSYflv1JdhozyXu5gAH5l2nF-z/exec";
 
-  // Ambil identitas siswa dari sesi
+  // Ambil data identitas dan pelanggaran dari session
   const namaSiswa = sessionStorage.getItem("exam_nama");
   const kelasSiswa = sessionStorage.getItem("exam_kelas");
+  let totalPelanggaran = parseInt(sessionStorage.getItem("exam_pelanggaran") || "0", 10);
 
-  // Validasi: Jika belum login, tendang balik ke index.html
+  // Validasi login
   if (!namaSiswa || !kelasSiswa) {
     alert("Sesi tidak ditemukan. Silakan login terlebih dahulu!");
     window.location.replace("index.html");
   }
 
-  let totalPelanggaran = 0;
-
   window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("lblNama").innerText = namaSiswa;
     document.getElementById("lblKelas").innerText = kelasSiswa;
+    document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
 
-    // Catat log siswa masuk ke ruang ujian
-    kirimLog("Mulai Ujian", 0);
+    // Tampilkan notifikasi peringatan jika sebelumnya sudah ada pelanggaran
+    if (totalPelanggaran > 0) {
+      const boxPeringatan = document.getElementById("peringatan");
+      boxPeringatan.classList.remove("d-none");
+      boxPeringatan.classList.add("d-flex");
+    }
+
+    // Deteksi apakah ini pertama kali masuk atau reload halaman
+    if (!sessionStorage.getItem("exam_started")) {
+      sessionStorage.setItem("exam_started", "true");
+      kirimLog("Mulai Ujian", 0);
+    } else {
+      kirimLog("Reload Halaman Ujian", totalPelanggaran);
+    }
   });
 
   // Pemantau fokus layar
   document.addEventListener("visibilitychange", function() {
     if (document.hidden) {
       totalPelanggaran++;
+      
+      // Simpan perubahan pelanggaran ke sessionStorage
+      sessionStorage.setItem("exam_pelanggaran", totalPelanggaran);
       document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
       
       const boxPeringatan = document.getElementById("peringatan");
