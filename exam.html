@@ -91,7 +91,6 @@
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqeFzjp0DyxDQnhMzmaLGx7Z9f1NlUJrgG6xVVu3gSYflv1JdhozyXu5gAH5l2nF-z/exec";
 
-  // Ambil data identitas dan pelanggaran dari session
   const namaSiswa = sessionStorage.getItem("exam_nama");
   const kelasSiswa = sessionStorage.getItem("exam_kelas");
   let totalPelanggaran = parseInt(sessionStorage.getItem("exam_pelanggaran") || "0", 10);
@@ -102,19 +101,23 @@
     window.location.replace("index.html");
   }
 
+  // Flag untuk membedakan antara reload halaman dan pindah tab
+  let isUnloading = false;
+  window.addEventListener("beforeunload", () => {
+    isUnloading = true;
+  });
+
   window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("lblNama").innerText = namaSiswa;
     document.getElementById("lblKelas").innerText = kelasSiswa;
     document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
 
-    // Tampilkan notifikasi peringatan jika sebelumnya sudah ada pelanggaran
     if (totalPelanggaran > 0) {
       const boxPeringatan = document.getElementById("peringatan");
       boxPeringatan.classList.remove("d-none");
       boxPeringatan.classList.add("d-flex");
     }
 
-    // Deteksi apakah ini pertama kali masuk atau reload halaman
     if (!sessionStorage.getItem("exam_started")) {
       sessionStorage.setItem("exam_started", "true");
       kirimLog("Mulai Ujian", 0);
@@ -125,10 +128,12 @@
 
   // Pemantau fokus layar
   document.addEventListener("visibilitychange", function() {
+    // Abaikan event jika dipicu oleh reload/penutupan halaman
+    if (isUnloading) return;
+
     if (document.hidden) {
       totalPelanggaran++;
       
-      // Simpan perubahan pelanggaran ke sessionStorage
       sessionStorage.setItem("exam_pelanggaran", totalPelanggaran);
       document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
       
