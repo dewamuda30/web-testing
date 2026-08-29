@@ -178,9 +178,11 @@
       return;
     }
 
-    // Simpan data identitas siswa ke sesi browser
+    // Simpan identitas dan inisialisasi counter pelanggaran ke 0
     sessionStorage.setItem("exam_nama", nama);
     sessionStorage.setItem("exam_kelas", kelas);
+    sessionStorage.setItem("exam_pelanggaran", "0");
+    sessionStorage.removeItem("exam_started"); // Reset flag mulai
 
     // Beralih ke halaman ujian
     window.location.href = "exam.html";
