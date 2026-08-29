@@ -4,231 +4,168 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DIGITAL EXAM PORTAL</title>
+  
+  <!-- Bootstrap 5.3 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <style>
     :root {
       --primary-navy: #0d1b2a;
       --navy-light: #1b263b;
       --navy-accent: #415a77;
-      --bg-color: #f0f4f8;
-      --white: #ffffff;
-      --danger: #dc2626;
-      --danger-bg: #fef2f2;
-      --border-color: #e2e8f0;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --bg-body: #f1f5f9;
     }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg-color);
-      color: #334155;
+      background-color: var(--bg-body);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
     }
 
-    .container {
+    .card-exam {
       width: 100%;
-      max-width: 440px; /* Lebar pas untuk form login */
-      background: var(--white);
-      padding: 32px 28px;
-      border-radius: 16px;
-      box-shadow: 0 12px 35px -8px rgba(13, 27, 42, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border-color);
-      transition: max-width 0.3s ease;
+      max-width: 440px;
+      border: 1px solid rgba(13, 27, 42, 0.08);
+      border-radius: 1.25rem;
+      background-color: #ffffff;
+      box-shadow: 0 15px 35px -5px rgba(13, 27, 42, 0.15), 0 5px 15px rgba(0, 0, 0, 0.04);
+      transition: max-width 0.35s ease-in-out;
     }
 
-    /* Saat ujian berlangsung, kontainer melebar */
-    .container.ujian-mode {
-      max-width: 900px;
-      padding: 24px;
+    /* Melebar otomatis saat ujian dimulai di layar tablet & laptop */
+    .card-exam.ujian-mode {
+      max-width: 950px;
     }
 
-    .header-portal {
-      text-align: center;
-      margin-bottom: 24px;
+    .bg-navy {
+      background-color: var(--primary-navy) !important;
     }
 
-    .header-portal h2 {
-      color: var(--primary-navy);
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+    .text-navy {
+      color: var(--primary-navy) !important;
     }
 
-    .header-portal p {
-      color: var(--navy-accent);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .warning-box {
-      background-color: var(--danger-bg);
-      color: var(--danger);
-      border: 1px solid #fecaca;
-      padding: 12px 14px;
-      border-radius: 8px;
-      margin-bottom: 18px;
-      display: none;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 13px;
-      color: var(--navy-light);
-    }
-
-    input, select {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 14px;
-      color: var(--primary-navy);
-      background-color: var(--white);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--primary-navy);
-      box-shadow: 0 0 0 3px rgba(13, 27, 42, 0.12);
-    }
-
-    select:disabled {
-      background-color: #f8fafc;
-      color: #94a3b8;
-      cursor: not-allowed;
-    }
-
-    button {
-      width: 100%;
+    .btn-navy {
       background-color: var(--primary-navy);
-      color: var(--white);
-      padding: 12px;
+      color: #ffffff;
+      font-weight: 600;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.6rem;
       transition: background-color 0.2s, transform 0.1s;
-      margin-top: 6px;
     }
 
-    button:hover:not(:disabled) {
+    .btn-navy:hover:not(:disabled) {
       background-color: var(--navy-light);
+      color: #ffffff;
     }
 
-    button:active:not(:disabled) {
-      transform: scale(0.99);
+    .btn-navy:active:not(:disabled) {
+      transform: scale(0.98);
     }
 
-    button:disabled {
-      background-color: #94a3b8;
-      cursor: not-allowed;
+    .form-select:focus, .form-control:focus {
+      border-color: var(--navy-accent);
+      box-shadow: 0 0 0 0.25rem rgba(13, 27, 42, 0.15);
     }
 
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      background-color: #f8fafc;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      font-size: 13px;
-      color: var(--navy-light);
-      margin-bottom: 14px;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background-color: #dcfce7;
-      color: #15803d;
-      font-weight: 600;
-    }
-
-    .pelanggaran-badge {
-      font-weight: bold;
-      color: var(--danger);
+    .exam-frame-container {
+      width: 100%;
+      height: 75vh;
+      min-height: 520px;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
     }
 
     iframe {
       width: 100%;
-      height: 70vh;
-      min-height: 550px;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      background: var(--white);
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
-<body>
+<body class="p-3 p-md-4">
 
-<div class="container" id="mainContainer">
-  <div class="header-portal">
-    <h2>DIGITAL EXAM PORTAL</h2>
-    <p>MTs Andalusia Banjarnegara</p>
-  </div>
-  
-  <div id="peringatan" class="warning-box">
-    ⚠️ Peringatan: Terdeteksi meninggalkan layar ujian! Pelanggaran dicatat ke sistem.
-  </div>
+<div class="card card-exam" id="mainContainer">
+  <div class="card-body p-4 p-md-5">
 
-  <!-- Form Login Identitas -->
-  <div id="identitasSection">
-    <div class="form-group">
-      <label for="kelasSiswa">Pilih Kelas</label>
-      <select id="kelasSiswa" onchange="filterNamaByKelas()" disabled>
-        <option value="">Memuat data kelas...</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="namaSiswa">Pilih Nama Siswa</label>
-      <select id="namaSiswa" disabled>
-        <option value="">Pilih kelas terlebih dahulu</option>
-      </select>
-    </div>
-
-    <button id="btnMulai" onclick="mulaiUjian()" disabled>Mulai Ujian</button>
-  </div>
-
-  <!-- Section Ruang Ujian -->
-  <div id="ujianSection" style="display: none;">
-    <div class="status-bar">
-      <div>
-        Siswa: <strong id="lblNama">-</strong> (<span id="lblKelas">-</span>)
+    <!-- Header Portal -->
+    <div class="text-center mb-4">
+      <div class="d-inline-flex p-3 rounded-circle bg-navy text-white mb-3 shadow-sm">
+        <i class="bi bi-mortarboard-fill fs-3"></i>
       </div>
-      <div>
-        Status: <span class="status-badge">Sedang Ujian</span> | 
-        Pelanggaran: <span id="counterPelanggaran" class="pelanggaran-badge">0</span>x
+      <h3 class="fw-bold text-navy mb-1 fs-4 fs-md-3">DIGITAL EXAM PORTAL</h3>
+      <p class="text-muted small mb-0">MTs Andalusia Banjarnegara</p>
+    </div>
+
+    <!-- Kotak Peringatan Pelanggaran -->
+    <div id="peringatan" class="alert alert-danger d-none align-items-center gap-2 py-2 px-3 mb-4 rounded-3 border-danger-subtle" role="alert">
+      <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+      <div class="small fw-semibold">
+        Terdeteksi beralih aplikasi/tab! Pelanggaran dicatat ke sistem.
       </div>
     </div>
-    
-    <iframe src="https://bit.ly/exam91">Memuat form ujian...</iframe>
+
+    <!-- Form Identitas (Login) -->
+    <div id="identitasSection">
+      <div class="mb-3">
+        <label for="kelasSiswa" class="form-label fw-semibold text-navy small">
+          <i class="bi bi-diagram-3-fill me-1"></i> Pilih Kelas
+        </label>
+        <select id="kelasSiswa" class="form-select py-2" onchange="filterNamaByKelas()" disabled>
+          <option value="">Memuat data kelas...</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="namaSiswa" class="form-label fw-semibold text-navy small">
+          <i class="bi bi-person-fill me-1"></i> Pilih Nama Siswa
+        </label>
+        <select id="namaSiswa" class="form-select py-2" disabled>
+          <option value="">Pilih kelas terlebih dahulu</option>
+        </select>
+      </div>
+
+      <button id="btnMulai" onclick="mulaiUjian()" class="btn btn-navy w-100 d-flex justify-content-center align-items-center gap-2" disabled>
+        <span>Mulai Ujian</span>
+        <i class="bi bi-arrow-right-circle"></i>
+      </button>
+    </div>
+
+    <!-- Section Ruang Ujian -->
+    <div id="ujianSection" class="d-none">
+      <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center bg-light p-3 rounded-3 border mb-3 gap-2">
+        <div class="small text-navy">
+          <i class="bi bi-person-badge-fill me-1"></i>
+          <strong id="lblNama">-</strong> (<span id="lblKelas" class="text-muted">-</span>)
+        </div>
+        <div class="d-flex align-items-center gap-2 small">
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+            <i class="bi bi-circle-fill fs-6 me-1"></i>Ujian Aktif
+          </span>
+          <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+            Pelanggaran: <strong id="counterPelanggaran">0</strong>x
+          </span>
+        </div>
+      </div>
+
+      <!-- Container Iframe Responsif -->
+      <div class="exam-frame-container shadow-sm">
+        <iframe src="https://bit.ly/exam91">Memuat form ujian...</iframe>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<!-- Bootstrap 5.3 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqeFzjp0DyxDQnhMzmaLGx7Z9f1NlUJrgG6xVVu3gSYflv1JdhozyXu5gAH5l2nF-z/exec";
@@ -238,7 +175,6 @@
   let ujianAktif = false;
   let dataSiswa = { nama: "", kelas: "" };
 
-  // Ambil data siswa dari Sheet 'DD' saat halaman dimuat
   window.addEventListener("DOMContentLoaded", async () => {
     const selectKelas = document.getElementById("kelasSiswa");
     const btnMulai = document.getElementById("btnMulai");
@@ -315,10 +251,10 @@
     document.getElementById("lblNama").innerText = nama;
     document.getElementById("lblKelas").innerText = kelas;
 
-    // Ubah mode kontainer menjadi lebar untuk ujian
+    // Menyesuaikan layout menjadi mode ujian
     document.getElementById("mainContainer").classList.add("ujian-mode");
-    document.getElementById("identitasSection").style.display = "none";
-    document.getElementById("ujianSection").style.display = "block";
+    document.getElementById("identitasSection").classList.add("d-none");
+    document.getElementById("ujianSection").classList.remove("d-none");
 
     kirimLog("Mulai Ujian", 0);
   }
@@ -331,7 +267,8 @@
       document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
       
       const boxPeringatan = document.getElementById("peringatan");
-      boxPeringatan.style.display = "block";
+      boxPeringatan.classList.remove("d-none");
+      boxPeringatan.classList.add("d-flex");
 
       kirimLog("Pindah Tab / Minimize", totalPelanggaran);
     }
