@@ -57,8 +57,8 @@
     <!-- Peringatan Pelanggaran -->
     <div id="peringatan" class="alert alert-danger d-none align-items-center gap-2 py-2 px-3 mb-3 rounded-3 border-danger-subtle" role="alert">
       <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5"></i>
-      <div class="small fw-semibold">
-        Peringatan: Terdeteksi berpindah tab/aplikasi!
+      <div class="small fw-semibold" id="teksPeringatan">
+        Peringatan: Terdeteksi meninggalkan layar ujian! Pelanggaran dicatat ke sistem guru.
       </div>
     </div>
 
@@ -82,7 +82,7 @@
 
     <!-- Container Google Form -->
     <div class="exam-frame-container shadow-sm">
-      <iframe src="https://forms.gle/oQhWWA7tZ1j19vkM6">Memuat form ujian...</iframe>
+      <iframe id="examIframe" src="https://bit.ly/exam91">Memuat form ujian...</iframe>
     </div>
 
   </div>
@@ -101,8 +101,9 @@
     window.location.replace("index.html");
   }
 
-  // Flag untuk membedakan antara reload halaman dan pindah tab
   let isUnloading = false;
+  let lastViolationTime = 0; // Untuk mencegah duplikasi log dalam selang waktu singkat
+
   window.addEventListener("beforeunload", () => {
     isUnloading = true;
   });
@@ -113,9 +114,7 @@
     document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
 
     if (totalPelanggaran > 0) {
-      const boxPeringatan = document.getElementById("peringatan");
-      boxPeringatan.classList.remove("d-none");
-      boxPeringatan.classList.add("d-flex");
+      tampilkanPeringatan("Peringatan: Total pelanggaran sebelumnya tercatat " + totalPelanggaran + "x.");
     }
 
     if (!sessionStorage.getItem("exam_started")) {
@@ -126,25 +125,53 @@
     }
   });
 
-  // Pemantau fokus layar
-  document.addEventListener("visibilitychange", function() {
-    // Abaikan event jika dipicu oleh reload/penutupan halaman
+  // Fungsi penanganan pelanggaran
+  function catatPelanggaran(tipe) {
     if (isUnloading) return;
 
-    if (document.hidden) {
-      totalPelanggaran++;
-      
-      sessionStorage.setItem("exam_pelanggaran", totalPelanggaran);
-      document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
-      
-      const boxPeringatan = document.getElementById("peringatan");
-      boxPeringatan.classList.remove("d-none");
-      boxPeringatan.classList.add("d-flex");
+    const now = Date.now();
+    // Cegah pencatatan ganda jika blur dan visibilitychange terpicu bersamaan (cooldown 1 detik)
+    if (now - lastViolationTime < 1000) return;
+    lastViolationTime = now;
 
-      kirimLog("Pindah Tab / Minimize", totalPelanggaran);
+    totalPelanggaran++;
+    sessionStorage.setItem("exam_pelanggaran", totalPelanggaran);
+    document.getElementById("counterPelanggaran").innerText = totalPelanggaran;
+
+    tampilkanPeringatan("Peringatan: Terdeteksi " + tipe + "! Pelanggaran ke-" + totalPelanggaran + " dicatat.");
+    kirimLog(tipe, totalPelanggaran);
+  }
+
+  function tampilkanPeringatan(pesan) {
+    const boxPeringatan = document.getElementById("peringatan");
+    const teksPeringatan = document.getElementById("teksPeringatan");
+    teksPeringatan.innerText = pesan;
+    boxPeringatan.classList.remove("d-none");
+    boxPeringatan.classList.add("d-flex");
+  }
+
+  // 1. Deteksi Ganti Tab atau Minimize Browser
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+      catatPelanggaran("Pindah Tab / Minimize Browser");
     }
   });
 
+  // 2. Deteksi Beralih ke Aplikasi Lain (Alt+Tab, Klik Taskbar, Buka App Lain)
+  window.addEventListener("blur", function() {
+    // Jeda sejenak untuk mengecek apakah siswa hanya mengklik iframe Google Form
+    setTimeout(() => {
+      // Jika elemen aktif adalah IFRAME, berarti siswa sedang mengerjakan soal (bukan pelanggaran)
+      if (document.activeElement && document.activeElement.tagName === "IFRAME") {
+        return;
+      }
+      
+      // Jika bukan klik iframe dan halaman tidak sedang reload, berarti pindah ke aplikasi luar
+      catatPelanggaran("Beralih ke Aplikasi Lain / Keluar Jendela");
+    }, 200);
+  });
+
+  // Fungsi pengiriman log ke Google Sheets
   function kirimLog(aktivitas, count) {
     const payload = {
       nama: namaSiswa,
@@ -153,9 +180,11 @@
       totalPelanggaran: count
     };
 
+    // Gunakan keepalive agar request tetap terkirim saat browser di-minimize
     fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
+      keepalive: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     }).catch(err => console.error("Gagal mengirim log:", err));
